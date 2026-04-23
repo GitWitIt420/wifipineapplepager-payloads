@@ -8,7 +8,7 @@
 
 <p align="center">
 <img src="https://img.shields.io/badge/Platform-WiFi%20Pineapple%20Pager-00d4aa?style=flat-square" />
-<img src="https://img.shields.io/badge/Version-1.5.1-blue?style=flat-square" />
+<img src="https://img.shields.io/badge/Version-1.6.1-blue?style=flat-square" />
 <img src="https://img.shields.io/badge/Author-JustSomeTrout-purple?style=flat-square" />
 </p>
 <p align="center">
@@ -18,7 +18,7 @@
 ```
     Title: Nautilus
     Author: JustSomeTrout (Trout / troot.)
-    Developed for Firmware version 1.0.4
+    Developed for Firmware version 1.0.6
     Category: Remote Access / Utility
     Web-based payload launcher with GitHub integration.
     Control your Pager from any device on the network.
@@ -50,7 +50,66 @@ No more fumbling with D-pad navigation or manual file transfers. Just point, cli
 <img width="600" height="4" alt="" src="https://github.com/user-attachments/assets/8560a6c9-b1f1-4eed-ac94-bd9e14d36ac5" />
 </p>
 
-## New in 1.5.0
+## New in 1.8.0
+
+### Added
+
+- **Themes Support**: New resource type for browsing and managing pager themes
+  - Scans `/root/themes/` for local themes (looks for `theme.json`)
+  - Fetches from `hak5/wifipineapplepager-themes` GitHub repo for Merged/PRs
+  - Parses theme metadata (name, description, author) from `theme.json`
+- **Ringtones Support**: New resource type for browsing RTTTL ringtones
+  - Scans `/root/ringtones/` for local `.rtttl` files
+  - Fetches from `hak5/wifipineapplepager-ringtones` GitHub repo for Merged/PRs
+  - Extracts ringtone name from RTTTL format
+- **Dynamic Repository Selection**: Each resource type now fetches from its own GitHub repository
+- **Per-resource Caching**: Separate localStorage cache for each resource type's Merged and PR data
+
+### Changed
+
+- `build_cache.sh`: Added `scan_themes()` and `scan_ringtones()` functions for new resource types
+- `api.sh`: Updated path validation to allow `/root/themes/` and `/root/ringtones/`
+- `index.html`: Added Themes and Ringtones tabs in resource selector row
+- Resource paths updated: `RESOURCE_REPOS` and `RESOURCE_PATHS` now include themes and ringtones
+
+## New in 1.7.1
+
+### Added
+
+- **Origin Proxy (`proxy.py`)**: Python TCP proxy on port 8890 that rewrites WebSocket `Origin` header to bypass Cross-Origin restrictions when connecting to the Pineapple API (port 1471).
+- **Auth Token Passthrough**: `api.sh` now proxies login to port 1471 and returns auth token, allowing Nautilus to set the required cookie.
+- **Python 3 Requirement**: Nautilus now requires Python 3 to run. Payloads will prompt to install python3 if not found.
+
+### Fixed
+
+- **Error Overlay**: Fixed "Lost connection" message appearing on top of working pager. Switched from `hidden` attribute to `display: none/flex` for consistent visibility control.
+- **Layout Gaps**: Fixed sliced-image table layout gaps by resetting padding/font-size on cells.
+
+## New in 1.7.0
+
+### Added
+
+- **Virtual Pager Integration**: Integrated the Virtual Pager UI into Nautilus.
+  - Adds a "Toggle Pager" button in the shell header.
+  - Displays the live pager screen above the terminal.
+  - Supports virtual button inputs (D-pad, A, B).
+- **Responsive Pager Dashboard**: The Virtual Pager automatically scales to fit available width while maintaining pixel-perfect layout.
+
+## New in 1.6.x
+
+| Feature | Description |
+|---------|-------------|
+| **Resource Type Selector** | Switch between Payloads, Alerts, and Recon from a new top-level navigation bar |
+| **Multi-Resource Support** | Browse and run payloads from `/root/payloads/user/`, `/root/payloads/alerts/`, and `/root/payloads/recon/` |
+| **Resizable Panels** | Drag-to-resize handles between sidebar, detail panel, console, and shell |
+| **Persistent Layout** | Panel sizes saved to localStorage and restored on reload |
+| **Dynamic GitHub Paths** | Merged tab fetches from corresponding GitHub paths for each resource type |
+
+<p align="center">
+<img width="600" height="4" alt="" src="https://github.com/user-attachments/assets/8560a6c9-b1f1-4eed-ac94-bd9e14d36ac5" />
+</p>
+
+## New in 1.5.x
 
 | Feature | Description |
 |---------|-------------|
@@ -59,6 +118,11 @@ No more fumbling with D-pad navigation or manual file transfers. Just point, cli
 | **Service Management** | Re-run payload to stop the service when running in background mode |
 | **Virtual Button Panel** | Web-based D-pad and A/B buttons for payloads using `WAIT_FOR_INPUT` or `WAIT_FOR_BUTTON_PRESS` |
 | **Smart Button Filtering** | Only allowed buttons are clickable - others are dimmed and disabled |
+| **Shell on Any Interface** | ttyd shell now accessible from any network interface, not just br-lan |
+| **Syntax Highlighting Fix** | Fixed View Source display for comments containing quotes |
+| **Settings Panel** | Configure Nautilus preferences via the web UI settings button |
+| **Auto Run Mode** | Skip the background/foreground prompt and auto-start with your preferred mode |
+| **Favourites** | Star your most-used payloads from Local or Merged tabs for quick access |
 
 <p align="center">
 <img width="600" height="4" alt="" src="https://github.com/user-attachments/assets/8560a6c9-b1f1-4eed-ac94-bd9e14d36ac5" />
@@ -100,6 +164,18 @@ Nautilus now has three payload sources accessible via tabs:
 - **Automatic Cleanup**: Downloaded payloads are removed after execution
 - **Cached for Speed**: GitHub payload list is cached locally for fast browsing
 - **Install to Local**: Save GitHub payloads permanently to your Pager with one click
+
+### ⭐ Favourites
+
+Star your most-used payloads for quick access:
+
+- **Favourites Tab**: Dedicated tab above Local/Merged/PRs for your starred payloads
+- **Star from Anywhere**: Click the star icon when viewing any Local or Merged payload
+- **Source Tracking**: Each favourite shows whether it came from Local or Merged
+- **Dual Favouriting**: The same payload can be favourited from both Local and Merged separately
+- **Quick Unfavourite**: Click the star in the favourites list to remove instantly
+- **Persistent Storage**: Favourites are saved to config and persist across sessions
+- **Stale Detection**: If a favourited payload is removed, you'll see a "Not Found" message with option to remove it
 
 ### 📶 WiFi Client Mode
 
