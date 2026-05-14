@@ -1,0 +1,24 @@
+# Nova Agent — Python dependencies
+# Install with: pip install -r requirements.txt
+#
+# NOTE: pyaudio is best installed via Termux's package manager:
+#   pkg install python-pyaudio portaudio
+# but pip install pyaudio works too if portaudio headers are present.
+
+# Core AI
+anthropic>=0.34.0
+
+# Speech recognition (offline, fast, ~50 MB model)
+vosk>=0.3.45
+
+# Audio recording
+pyaudio>=0.2.14
+
+# Numeric audio processing
+numpy>=1.26.0
+
+# HTTP for ElevenLabs TTS + http_request tool
+requests>=2.31.0
+
+# Optional: beautiful terminal output
+rich>=13.0.0
