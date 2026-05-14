@@ -8,6 +8,9 @@
 # Core AI
 anthropic>=0.34.0
 
+# .env file loading
+python-dotenv>=1.0.0
+
 # Speech recognition (offline, fast, ~50 MB model)
 vosk>=0.3.45
 

@@ -11,13 +11,15 @@ Nova has these tools:
   device_info      – dump Android/Termux device info
 
 All commands run with the same UID as the Termux process. Dangerous commands
-(rm -rf /, dd, mkfs) are warned about but not blocked — Nova trusts you.
+(rm -rf /, dd, mkfs) are warned about and blocked in SAFE_MODE.
 """
 
 import json
 import os
 import shlex
 import subprocess
+
+import requests
 import textwrap
 from pathlib import Path
 from typing import Any, Optional
@@ -46,7 +48,10 @@ def _warn_if_dangerous(cmd: str) -> Optional[str]:
 
 def execute_shell(command: str, timeout: int = 120, workdir: str = "") -> str:
     """Run a shell command and return combined stdout+stderr."""
+    from config import cfg
     warn = _warn_if_dangerous(command)
+    if cfg.SAFE_MODE and warn:
+        return f"[BLOCKED] SAFE_MODE is enabled.\n{warn}"
     prefix = f"{warn}\n\n" if warn else ""
 
     kwargs: dict[str, Any] = {
@@ -120,25 +125,15 @@ def http_request(
     body: str = "",
     timeout: int = 30,
 ) -> str:
-    import urllib.request
-    import urllib.error
-
-    method = method.upper()
-    req = urllib.request.Request(url, method=method)
-    if headers:
-        for k, v in headers.items():
-            req.add_header(k, v)
-    data = body.encode() if body else None
     try:
-        with urllib.request.urlopen(req, data=data, timeout=timeout) as resp:
-            raw = resp.read(50_000)
-            try:
-                text = raw.decode("utf-8")
-            except UnicodeDecodeError:
-                text = raw[:256].hex()
-            return f"HTTP {resp.status}\n{dict(resp.headers)}\n\n{text}"
-    except urllib.error.HTTPError as e:
-        return f"HTTP {e.code}: {e.reason}\n{e.read(4096).decode(errors='replace')}"
+        resp = requests.request(
+            method=method.upper(),
+            url=url,
+            headers=headers or {},
+            data=body.encode() if body else None,
+            timeout=timeout,
+        )
+        return f"HTTP {resp.status_code}\n{dict(resp.headers)}\n\n{resp.text[:50_000]}"
     except Exception as e:
         return f"[ERROR] {e}"
 

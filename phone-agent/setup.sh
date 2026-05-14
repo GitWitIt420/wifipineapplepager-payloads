@@ -72,6 +72,7 @@ pip install \
     vosk \
     numpy \
     requests \
+    python-dotenv \
     rich
 
 # pyaudio usually comes from pkg install python-pyaudio, but try pip as fallback

@@ -136,6 +136,42 @@ def _show_nova(text: str):
 
 # ── Claude API interaction ────────────────────────────────────────────────────
 
+def _trim_history(history: List[dict], max_turns: int) -> List[dict]:
+    """
+    Trim history to at most max_turns*2 messages while keeping the sequence
+    valid for the Anthropic API:
+      - First message must have role 'user'
+      - tool_result blocks must be preceded by their tool_use counterpart
+      - No orphaned tool_use at the end
+    Strategy: slice to size, then advance to the first 'clean' user message
+    (one whose content is plain text, not a list of tool_results).
+    """
+    if len(history) <= max_turns * 2:
+        return history
+
+    trimmed = history[-(max_turns * 2):]
+
+    for i, msg in enumerate(trimmed):
+        if msg["role"] != "user":
+            continue
+        content = msg["content"]
+        if isinstance(content, str):
+            return trimmed[i:]
+        if isinstance(content, list):
+            is_tool_results = all(
+                isinstance(b, dict) and b.get("type") == "tool_result"
+                for b in content
+            )
+            if not is_tool_results:
+                return trimmed[i:]
+
+    # Fallback: last plain user message
+    for msg in reversed(history):
+        if msg["role"] == "user" and isinstance(msg["content"], str):
+            return [msg]
+    return history[-2:]
+
+
 def _claude_turn(client, history: List[dict], user_text: str):
     """
     Send user_text to Claude, handle all tool-use rounds, return final response text.
@@ -221,9 +257,7 @@ def run_text_mode(client):
             _print(f"\n[ERROR] {e}", "bold red")
             log.exception("Claude turn error")
 
-        # Trim history
-        if len(history) > cfg.MAX_HISTORY_TURNS * 2:
-            history = history[-(cfg.MAX_HISTORY_TURNS * 2):]
+        history = _trim_history(history, cfg.MAX_HISTORY_TURNS)
 
 
 # ── Voice mode ─────────────────────────────────────────────────────────────────
@@ -366,9 +400,7 @@ def run_voice_mode(client, mode: str):
             # Speak
             tts.speak(response_text)
 
-            # Trim history
-            if len(history) > cfg.MAX_HISTORY_TURNS * 2:
-                history = history[-(cfg.MAX_HISTORY_TURNS * 2):]
+            history = _trim_history(history, cfg.MAX_HISTORY_TURNS)
 
     except KeyboardInterrupt:
         pass

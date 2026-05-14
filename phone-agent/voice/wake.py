@@ -14,10 +14,13 @@ Termux:Tasker / Termux Widget, making it feel like a true PTT button.
 """
 
 import json
+import logging
 import sys
 import threading
 import time
 from typing import Callable, Optional
+
+_log = logging.getLogger("nova.wake")
 
 
 # ── PTT (terminal Enter key) ──────────────────────────────────────────────────
@@ -103,7 +106,8 @@ class KeywordDetector:
                     elif self._active and self.sleep_word in text:
                         self._active = False
                         self.on_sleep()
-            except Exception:
+            except Exception as e:
+                _log.error("Keyword detection loop error: %s", e)
                 time.sleep(0.05)
 
 
